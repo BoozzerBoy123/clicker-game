@@ -1,69 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Global Username Clicker</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
-    #leaderboard { background: white; padding: 20px; margin-top: 20px; border-radius: 10px; display: inline-block; }
-    .user { margin: 5px 0; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Global Username Clicker</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
+        #leaderboard { background: white; padding: 20px; margin-top: 20px; border-radius: 10px; display: inline-block; }
+        .user { margin: 5px 0; }
+    </style>
 </head>
 <body>
 
-  <h1>🌍 Global Username Clicker 🌍</h1>
+    <h1>🌍 Global Username Clicker 🌍</h1>
 
-  <input type="text" id="username" placeholder="Enter your username" />
-  <br>
-  <button id="clickButton" onclick="clickButton()">Click Me!</button>
+    <input type="text" id="username" placeholder="Enter your username" /> <br>
+    <button id="clickButton" onclick="clickButton()">Click Me!</button>
 
-  <div id="leaderboard">
-    <h2>Leaderboard</h2>
-    <div id="usersList"></div>
-  </div>
+    <div id="leaderboard">
+        <h2>Leaderboard</h2>
+        <div id="usersList"></div>
+    </div>
 
 <script>
-  // Your Firebase config here:
-  const firebaseConfig = {
-    apiKey: "AIzaSyDqbgFjYQdkD7yYWDiYFN5C3DrdE7SsaYU",
-    authDomain: "clickergame-5bf9a.firebaseapp.com",
-    databaseURL: "https://clickergame-5bf9a-default-rtdb.firebaseio.com/",
-    projectId: "clickergame-5bf9a",
-    storageBucket: "clickergame-5bf9a.firebasestorage.app",
-    messagingSenderId: "733286211295",
-    appId: "1:733286211295:web:582d4b5a21d6bcb68c936a",
-    measurementId: "G-SGGJ00QYV4"
-  };
+    // Your Firebase config here:
+    const firebaseConfig = {
+        apiKey: "AIzaSyDqbgFjYQdkD7yYWDiYFN5C3DrdE7SsaYU",
+        authDomain: "clickergame-5bf9a.firebaseapp.com",
+        databaseURL: "https://clickergame-5bf9a-default-rtdb.firebaseio.com",
+        projectId: "clickergame-5bf9a",
+        storageBucket: "clickergame-5bf9a.firebasestorage.app",
+        messagingSenderId: "733286211295",
+        appId: "1:733286211295:web:582d4b5a21d6bcb68c936a",
+        measurementId: "G-SGGJ00QYV4"
+    };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-  function clickButton() {
-    const username = document.getElementById('username').value.trim();
-    if (!username) {
-      alert('Please enter a username!');
-      return;
+    function clickButton() {
+        const username = document.getElementById('username').value.trim();
+        if (!username) {
+            alert('Please enter a username!');
+            return;
+        }
+
+        const userRef = db.ref('users/' + username);
+        userRef.update({ clicks: firebase.database.ServerValue.increment(1) });
     }
 
-    const userRef = db.ref('users/' + username);
-    userRef.update({ clicks: firebase.database.ServerValue.increment(1) });
-  }
+    function updateLeaderboard() {
+        db.ref('users').on('value', snapshot => {
+            const users = snapshot.val() || {};
+            const usersArray = Object.entries(users).map(([name, data]) => ({ name: name, clicks: data.clicks || 0 }));
+            const sortedUsers = usersArray.sort((a, b) => b.clicks - a.clicks);
+            const usersList = sortedUsers.map((user, index) =>
+                `<div class="user">${index + 1}. <strong>${user.name}</strong>: ${user.clicks} clicks</div>`
+            ).join('');
+            document.getElementById('usersList').innerHTML = usersList;
+        });
+    }
 
-  function updateLeaderboard() {
-    db.ref('users').on('value', snapshot => {
-      const users = snapshot.val() || {};
-      const usersArray = Object.entries(users).map(([name, data]) => ({ name: name, clicks: data.clicks || 0 }));
-      const sortedUsers = usersArray.sort((a, b) => b.clicks - a.clicks);
-      const usersList = sortedUsers.map((user, index) =>
-        `<div class="user">${index + 1}. <strong>${user.name}</strong>: ${user.clicks} clicks</div>`
-      ).join('');
-      document.getElementById('usersList').innerHTML = usersList;
-    });
-  }
-
-  updateLeaderboard();
+    updateLeaderboard();
 </script>
 
 </body>
